@@ -240,6 +240,9 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
         "Evalúa la respuesta del estudiante según la siguiente rúbrica.",
         "Por cada criterio, indica el **Nivel alcanzado** (Insuficiente, En proceso, Satisfactorio o Destacado) y una **justificación breve**.",
         "Solo devuelve texto estructurado claro y coherente.",
+        "En el caso de que no tenga nada que ver con lo esperado, menciona amablemente que no cumple con lo esperado.",
+        "identifica lo escrito en la respuesta del estudiante, que sea coherente y tenga sentido",
+        "la respuesta del estudiante tiene que tener un sentido lógico de la pregunta que se tiene, una explicación clara, no es suficiente con solo dar palabras sin ideas",
         "",
         f"Respuesta del estudiante: {respuesta_estudiante}",
         f"Respuesta esperada: {respuesta_esperada}",
@@ -247,6 +250,7 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
         "Rúbrica:"
     ]
 
+    print(respuesta_estudiante)
     for c in criterios:
         prompt.append(
             f"- Criterio: {c['criterio']}\n"
@@ -273,15 +277,15 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
             bloque = re.search(rf"(Criterio:\s*{re.escape(criterio)}.*?)(?=(?:\nCriterio:|$))", respuesta_ia, re.IGNORECASE | re.DOTALL)
             if not bloque:
                 continue
-            print(bloque)
+            #print(bloque)
             texto_bloque = bloque.group(1)
-            print(texto_bloque)
+            #print(texto_bloque)
             #nivel_match = re.search(r"Nivel alcanzado:\s*(Insuficiente|En proceso|Satisfactorio|Destacado)", texto_bloque, re.IGNORECASE)
             nivel_match = re.search(r"\*{0,2}\s*Nivel\s+alcanzado\s*\*{0,2}\s*:\s*\*{0,2}\s*(Insuficiente|En\s*proceso|Satisfactorio|Destacado)\*{0,2}",texto_bloque,re.IGNORECASE)
             if not nivel_match:
                 continue
             nivel = nivel_match.group(1).strip().lower()
-            print(nivel)
+            #print(nivel)
             if "insuficiente" in nivel:
                 puntaje = float(c["puntaje_insuficiente"])
             elif "proceso" in nivel:
