@@ -240,17 +240,19 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
         "Evalúa la respuesta del estudiante según la siguiente rúbrica.",
         "Por cada criterio, indica el **Nivel alcanzado** (Insuficiente, En proceso, Satisfactorio o Destacado) y una **justificación breve**.",
         "Solo devuelve texto estructurado claro y coherente.",
+        "La respuesta debe ser en segunda persona, dirigiendose directamente",
         "En el caso de que no tenga nada que ver con lo esperado, menciona amablemente que no cumple con lo esperado.",
         "identifica lo escrito en la respuesta del estudiante, que sea coherente y tenga sentido",
         "la respuesta del estudiante tiene que tener un sentido lógico de la pregunta que se tiene, una explicación clara, no es suficiente con solo dar palabras sin ideas",
         "",
         f"Respuesta del estudiante: {respuesta_estudiante}",
         f"Respuesta esperada: {respuesta_esperada}",
+        "De ser necesario brinda un ejemplo corto de la respuesta esperada",
         "",
         "Rúbrica:"
     ]
 
-    print(respuesta_estudiante)
+    #print(respuesta_estudiante)
     for c in criterios:
         prompt.append(
             f"- Criterio: {c['criterio']}\n"
@@ -275,6 +277,8 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
         for c in criterios:
             criterio = c["criterio"]
             bloque = re.search(rf"(Criterio:\s*{re.escape(criterio)}.*?)(?=(?:\nCriterio:|$))", respuesta_ia, re.IGNORECASE | re.DOTALL)
+            print(c)
+            print(bloque)
             if not bloque:
                 continue
             #print(bloque)

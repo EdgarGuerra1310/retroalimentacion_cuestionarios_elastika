@@ -6,7 +6,7 @@ token = "934a5bc65d092299e862902196a6f43b"
 domain = "https://campusvirtual-sifods.minedu.gob.pe"
 restformat = "json"
 
-courseid = 1483  # tu curso
+courseid = 2369  # tu curso
 
 # === FUNCIÓN: obtener contenidos del curso ===
 function = "mod_quiz_get_quizzes_by_courses"

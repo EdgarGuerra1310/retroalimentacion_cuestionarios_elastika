@@ -10,9 +10,9 @@ token = "934a5bc65d092299e862902196a6f43b"
 domain = "https://campusvirtual-sifods.minedu.gob.pe"
 restformat = "json"
 
-userid = 423   # <<-- pon aquí el id del usuario
-courseid = 1483  # <<-- pon aquí el id del curso
-quizid = 1530    # <<-- pon aquí el id del quiz
+userid = 20649   # <<-- pon aquí el id del usuario
+courseid = 1484  # <<-- pon aquí el id del curso
+quizid = 1654    # <<-- pon aquí el id del quiz
 
 # === PRIMER PASO: obtener intentos del usuario ===
 function = "mod_quiz_get_user_attempts"
