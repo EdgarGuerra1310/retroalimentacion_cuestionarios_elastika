@@ -13,20 +13,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
 # === CONFIGURACIÓN ===
 MOODLE_TOKEN = os.getenv("MOODLE_TOKEN")
 MOODLE_DOMAIN = os.getenv("MOODLE_DOMAIN")
 RESTFORMAT = "json"
-
-QUIZ_CONFIG = {
-    "2501": {
-        "preguntas_cerradas": []
-    },
-    "11752": {
-        "preguntas_cerradas": ["1","2","3","4","5","6"]
-    }
-}
 
 # === CLIENTE OPENAI ===
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -38,20 +28,6 @@ OPENAI_PRICES = {
         "completion": 0.60 / 1_000_000
     }
 }
-def obtener_retro_visible(retro_completo):
-    if not retro_completo:
-        return ""
-
-    # Extraer puntaje
-    puntaje_match = re.search(r"Puntaje total obtenido:\s*(.+)", retro_completo)
-
-    # Extraer resumen final
-    resumen_match = re.search(r"\*\*Retroalimentación final:\*\*\s*(.+)", retro_completo, re.DOTALL)
-
-    puntaje = puntaje_match.group(1).strip() if puntaje_match else ""
-    resumen = resumen_match.group(1).strip() if resumen_match else ""
-
-    return f"**Puntaje:** {puntaje}\n\n{resumen}"
 
 def calcular_costos(modelo, usage):
     if not usage:
@@ -352,27 +328,6 @@ def generar_retroalimentacion_ia(enunciado, respuesta_estudiante, respuesta_espe
         return completion.choices[0].message.content.strip()
     except Exception as e:
         return f"⚠️ Error al generar retroalimentación con IA: {e}"
-def limpiar_numero(valor):
-    if valor is None:
-        return 0.0
-
-    if isinstance(valor, str):
-        valor = valor.replace(",", ".")  # 👈 clave
-        try:
-            return float(valor)
-        except:
-            return 0.0
-
-    return float(valor)
-
-def es_pregunta_cerrada(quizid, numero):
-    quizid = str(quizid)
-    numero = str(numero)
-
-    config = QUIZ_CONFIG.get(quizid, {})
-    cerradas = config.get("preguntas_cerradas", [])
-
-    return numero in cerradas
 
 # === RETROALIMENTACIÓN CON RÚBRICA ===
 def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiante, respuesta_esperada,id_user, intento_num):
@@ -535,68 +490,22 @@ Redacta de 3 a 4 líneas describiendo el desempeño global del estudiante, desta
             costo_total=costo_total
         )
 
-        retro_completo = f"""
-        **Retroalimentación por rúbrica (Pregunta {numero_str})**
+        retro_final = f"""
+**Retroalimentación por rúbrica (Pregunta {numero_str})**
 
-        {respuesta_ia}
+{respuesta_ia}
 
-        ---
+---
 
-        **Puntaje total obtenido:** {puntaje_total:.2f} / {puntaje_maximo_total:.2f}
+**Puntaje total obtenido:** {puntaje_total:.2f} / {puntaje_maximo_total:.2f}
 
-        **Retroalimentación final:** {resumen}
-        """
+**Retroalimentación final:** {resumen}
+"""
 
-        # 👇 SOLO LO QUE VE EL USUARIO
-        retro_visible = f"""
-        **Puntaje:** {puntaje_total:.2f} / {puntaje_maximo_total:.2f}
-
-        {resumen}
-        """
-
-        return retro_completo.strip(), retro_visible.strip(), puntaje_total, puntaje_maximo_total
+        return retro_final.strip(), puntaje_total, puntaje_maximo_total
 
     except Exception as e:
         return f"⚠️ Error al generar retroalimentación con rúbrica: {e}", None, None
-
-def existe_registro(id_user, quizid, intento_num, pregunta_num):
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT 1 FROM retroalimentaciones
-        WHERE id_user=%s AND quizid=%s AND intento_num=%s AND pregunta_num=%s
-        LIMIT 1
-    """, (id_user, quizid, intento_num, pregunta_num))
-    
-    existe = cur.fetchone()
-    conn.close()
-    return existe is not None
-
-def calcular_resumen_intento(preguntas):
-    dimensiones = {
-        "I. Evaluación de conocimientos": {"preguntas": range(1, 7), "total": 0},
-        "II. Evaluación de análisis y reflexión crítica del formador": {"preguntas": range(7, 10), "total": 0},
-        "III. Evaluación del nivel actitudinal e integridad del formador": {"preguntas": range(10, 12), "total": 0}
-    }
-
-    total_general = 0
-
-    for q in preguntas:
-        num = int(q["pregunta"])
-        puntaje = float(q.get("puntaje_obtenido") or 0)
-
-        for dim, data in dimensiones.items():
-            if num in data["preguntas"]:
-                data["total"] += puntaje
-                break
-
-        total_general += puntaje
-
-    # ✅ FORMATO
-    for dim in dimensiones:
-        dimensiones[dim]["total"] = round(dimensiones[dim]["total"], 2)
-
-    return dimensiones, round(total_general)
 
 # === RUTA PRINCIPAL ===
 @app.route("/cuestionario1/")
@@ -624,98 +533,40 @@ def index():
             numero = str(q.get("number", "N/A"))
             enunciado, respuesta_estudiante, _ = parse_question_html(q.get("html", ""))
 
-            # === DETECTAR SI ES CERRADA ===
-            if es_pregunta_cerrada(quizid, numero):
-
-                # 🔹 puntaje real desde Moodle (mejor forma)
-                puntaje_obtenido = limpiar_numero(q.get("mark", 0))
-                puntaje_maximo = limpiar_numero(q.get("maxmark", 0))
-
-                # 🔹 GUARDAR EN BD (AQUÍ ESTÁ EL CAMBIO CLAVE)
-                if not existe_registro(id_user, quizid, numero_intento, numero):
-                    guardar_retroalimentacion(
-                        id_user,
-                        documento_usuario,
-                        quizid,
-                        numero_intento,
-                        numero,
-                        enunciado,
-                        respuesta_estudiante,
-                        "",  # 👈 retroalimentación VACÍA
-                        puntaje_obtenido,
-                        puntaje_maximo
-                    )
-
-                # 🔹 enviar al frontend
-                preguntas.append({
-                    "pregunta": numero,
-                    "enunciado": enunciado,
-                    "respuesta_estudiante": respuesta_estudiante,
-                    "es_cerrada": True,
-                    "puntaje_obtenido": puntaje_obtenido,
-                    "puntaje_maximo": puntaje_maximo,
-                    "retroalimentacion": None
-                })
-
-                continue
-
-
-            # === ABIERTAS (tu flujo actual) ===
             if numero in retro_guardadas:
                 datos = retro_guardadas[numero]
-                retro_completo = datos["retroalimentacion"]
-                retro_final = obtener_retro_visible(retro_completo)
-
-                preguntas.append({
-                    "pregunta": numero,
-                    "enunciado": datos["enunciado"],
-                    "respuesta_estudiante": datos["respuesta_estudiante"],
-                    "es_cerrada": False,
-                    "retroalimentacion": markdown.markdown(retro_final),
-                    "puntaje_obtenido": float(datos.get("puntaje_obtenido") or 0)
-                })
-
+                retro_final = datos["retroalimentacion"]
             else:
                 respuesta_esperada = RESPUESTAS_ESPERADAS.get(str(quizid), {}).get(str(numero), "")
-
-                retro_rubrica = generar_retroalimentacion_con_rubrica_ia(
-                    quizid, numero, respuesta_estudiante, respuesta_esperada, id_user, numero_intento
-                )
+                retro_rubrica = generar_retroalimentacion_con_rubrica_ia(quizid,numero,respuesta_estudiante,respuesta_esperada,id_user,numero_intento)
 
                 if retro_rubrica and isinstance(retro_rubrica, tuple):
-                    retro_completo, retro_visible, puntaje_obtenido, puntaje_maximo = retro_rubrica
-                    retro_final = retro_visible   # 👈 SOLO ESTO VA AL FRONT
+                    retro_final, puntaje_obtenido, puntaje_maximo = retro_rubrica
                 elif retro_rubrica:
                     retro_final, puntaje_obtenido, puntaje_maximo = retro_rubrica, None, None
                 else:
-                    #retro_base = evaluar_respuesta(quizid, numero, respuesta_estudiante)
-                    retro_ia = generar_retroalimentacion_ia(
-                        enunciado, respuesta_estudiante, respuesta_esperada,
-                        id_user, quizid, numero_intento, numero
-                    )
-                    #retro_final = f"{retro_base}\n\n💬 {retro_ia}"
-                    retro_final = f"💬 {retro_ia}"
+                    retro_base = evaluar_respuesta(quizid, numero, respuesta_estudiante)
+                    retro_ia = generar_retroalimentacion_ia(enunciado,respuesta_estudiante,respuesta_esperada,id_user,quizid,numero_intento,numero)
+                    retro_final = f"{retro_base}\n\n💬 {retro_ia}"
                     puntaje_obtenido, puntaje_maximo = None, None
 
                 guardar_retroalimentacion(
                     id_user, documento_usuario, quizid, numero_intento, numero,
-                    enunciado, respuesta_estudiante, retro_completo,
+                    enunciado, respuesta_estudiante, retro_final,
                     puntaje_obtenido, puntaje_maximo
                 )
 
-                preguntas.append({
-                    "pregunta": numero,
-                    "enunciado": enunciado,
-                    "respuesta_estudiante": respuesta_estudiante,
-                    "es_cerrada": False,
-                    "retroalimentacion": markdown.markdown(retro_final)
-                })
-        dimensiones, total_general = calcular_resumen_intento(preguntas)
+            retro_final = markdown.markdown(retro_final)
+            preguntas.append({
+                "pregunta": numero,
+                "enunciado": enunciado,
+                "respuesta_estudiante": respuesta_estudiante,
+                "retroalimentacion": retro_final
+            })
+
         intentos.append({
             "numero": numero_intento,
-            "preguntas": preguntas,
-            "dimensiones": dimensiones,
-            "total_general": total_general
+            "preguntas": preguntas
         })
 
     return render_template("index.html", intentos=intentos, user=id_user, quiz=quizid)

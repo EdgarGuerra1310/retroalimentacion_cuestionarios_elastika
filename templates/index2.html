@@ -156,47 +156,17 @@
                             {{ q.respuesta_estudiante }}
                         </div>
 
-                        {% if q.es_cerrada %}
-
-                            <!-- 🔹 SOLO PARA CERRADAS -->
-                            <div class="puntaje">
-                                <strong>Puntaje:</strong> {{ q.puntaje_obtenido }} / {{ q.puntaje_maximo }}
-                            </div>
-
-                        {% else %}
-
-                            <!-- 🔹 SOLO PARA ABIERTAS -->
-                            <div class="retroalimentacion" style="white-space: pre-line;">
-                                <strong>Retroalimentación:</strong><br>
-                                {{ q.retroalimentacion | safe }}
-                            </div>
-
-                        {% endif %}
+                        <div class="retroalimentacion" style="white-space: pre-line;">
+                            <strong>Retroalimentación:</strong><br>
+                            {{ q.retroalimentacion | safe }}
+                        </div>
                         
                     </div>
                 {% endfor %}
-            </div>
-
-            <div class="resumen">
-                <h3>📊 Resumen del intento</h3>
-
-                {% for nombre, data in intento.dimensiones.items() %}
-                    <p>
-                        <strong>{{ nombre }}:</strong> {{ data.total | round(0) }}
-                    </p>
-                {% endfor %}
-
-                <hr>
-
-                <p>
-                    <strong>🎯 Puntaje total:</strong> {{ intento.total_general }}
-                </p>
             </div>
         {% endfor %}
     {% else %}
         <p>No se encontraron intentos o preguntas.</p>
     {% endif %}
-    
-</div>
 </body>
 </html>
