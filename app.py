@@ -40,6 +40,7 @@ client = AzureOpenAI(
     azure_endpoint="https://Minedu-IA.openai.azure.com"
 )
 
+
 # === COSTOS OPENAI ===
 OPENAI_PRICES = {
     "gpt-4o-mini": {
