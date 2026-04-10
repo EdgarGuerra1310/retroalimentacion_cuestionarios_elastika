@@ -29,7 +29,16 @@ QUIZ_CONFIG = {
 }
 
 # === CLIENTE OPENAI ===
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+#client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+#client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+from openai import AzureOpenAI
+import os
+
+client = AzureOpenAI(
+    api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    api_version="2024-05-01-preview",
+    azure_endpoint="https://Minedu-IA.openai.azure.com"
+)
 
 # === COSTOS OPENAI ===
 OPENAI_PRICES = {
