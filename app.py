@@ -306,9 +306,12 @@ def evaluar_respuesta(quizid, numero, respuesta_estudiante):
 
 # === RETROALIMENTACIÓN IA ===
 def generar_retroalimentacion_ia(enunciado, respuesta_estudiante, respuesta_esperada,
-                                 id_user, quizid, intento_num, pregunta_num):
+                                 id_user, quizid, intento_num, pregunta_num, nombre_usuario):
     prompt = f"""
     Actúa como un formador pedagógico experto en retroalimentación formativa.
+    El estudiante se llama {nombre_usuario}.
+    Dirígete a él por su nombre en la retroalimentación.
+
     La pregunta es:
     "{enunciado}"
 
@@ -385,7 +388,7 @@ def es_pregunta_cerrada(quizid, numero):
     return numero in cerradas
 
 # === RETROALIMENTACIÓN CON RÚBRICA ===
-def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiante, respuesta_esperada,id_user, intento_num):
+def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiante, respuesta_esperada,id_user, intento_num, nombre_usuario):
     quizid_str, numero_str = str(quizid).strip(), str(numero).strip()
     if quizid_str not in RUBRICAS or numero_str not in RUBRICAS[quizid_str]:
         return None
@@ -398,6 +401,7 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
     # === Construir prompt base ===
     prompt = [
         "Eres un docente evaluador experto en formación de formadores del Ministerio de Educación.",
+        f"El estudiante se llama {nombre_usuario}.",
         "Evalúa la respuesta del estudiante según la siguiente rúbrica.",
         "Por cada criterio, indica el **Nivel alcanzado** (Insuficiente, En proceso, Satisfactorio o Destacado) y una **justificación breve**.",
         "Solo devuelve texto estructurado claro y coherente.",
@@ -507,9 +511,11 @@ Eres un evaluador educativo. Redacta una retroalimentación final general basada
 {respuesta_ia}
 
 El puntaje total obtenido es {puntaje_total:.2f} sobre un máximo de {puntaje_maximo_total:.2f}.
-Redacta de 3 a 4 líneas describiendo el desempeño global del estudiante, destacando fortalezas y aspectos a mejorar.
+El estudiante se llama {nombre_usuario}, redacta de 4 a 5 líneas describiendo fortalezas y aspectos a mejorar sin mencionar el nivel alcanzado ni el desempeño obtenido. Dirigete al
+docente con su nombre en primera persona como si fueras un formador.
 """
-
+        print('--------------------------------nombre del usuario--------------------')
+        print(nombre_usuario)
         completion_final = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt_resumen}],
@@ -614,8 +620,9 @@ def index():
     id_curso = request.args.get("id_curso")
     id_user = request.args.get("id_user")
     quizid = request.args.get("quizid")
-    documento_usuario = request.args.get('nombre_usuario')
-
+    documento_usuario = request.args.get('documento_usuario')
+    nombre_usuario = request.args.get('nombre_usuario')
+    print(nombre_usuario)
     if not all([id_user, quizid]):
         return render_template("index.html", message="Falta id_user o quizid en la URL. Ej: ?id_user=423&quizid=1530")
 
@@ -689,7 +696,7 @@ def index():
                 respuesta_esperada = RESPUESTAS_ESPERADAS.get(str(quizid), {}).get(str(numero), "")
 
                 retro_rubrica = generar_retroalimentacion_con_rubrica_ia(
-                    quizid, numero, respuesta_estudiante, respuesta_esperada, id_user, numero_intento
+                    quizid, numero, respuesta_estudiante, respuesta_esperada, id_user, numero_intento, nombre_usuario
                 )
 
                 if retro_rubrica and isinstance(retro_rubrica, tuple):
@@ -701,7 +708,7 @@ def index():
                     #retro_base = evaluar_respuesta(quizid, numero, respuesta_estudiante)
                     retro_ia = generar_retroalimentacion_ia(
                         enunciado, respuesta_estudiante, respuesta_esperada,
-                        id_user, quizid, numero_intento, numero
+                        id_user, quizid, numero_intento, numero, nombre_usuario
                     )
                     #retro_final = f"{retro_base}\n\n💬 {retro_ia}"
                     retro_final = f"💬 {retro_ia}"

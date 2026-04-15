@@ -97,10 +97,15 @@
             border-left: 4px solid #004aad;
             background: #eef4ff;
             border-radius: 6px;
+            line-height: 1.6;
         }
 
         .oculto {
             display: none;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
         }
     </style>
 
@@ -123,80 +128,82 @@
     </script>
 </head>
 <body>
+    <div class="container">
 
-    <!-- LOADER -->
-    <div id="loader">
-        <div class="spinner"></div>
-        <div id="loader-text">🔄 Generando retroalimentación...</div>
-    </div>
-
-    <h1>Retroalimentación del Quiz</h1>
-    <p><strong>Usuario:</strong> {{ user }} | <strong>Quiz:</strong> {{ quiz }}</p>
-
-    {% if intentos %}
-        <div class="botones-intentos">
-            {% for intento in intentos %}
-                <button class="boton-intento" onclick="mostrarIntento('{{ intento.numero }}')">
-                    📝 Intento {{ intento.numero }}
-                </button>
-            {% endfor %}
+        <!-- LOADER -->
+        <div id="loader">
+            <div class="spinner"></div>
+            <div id="loader-text">🔄 Generando retroalimentación...</div>
         </div>
 
-        {% for intento in intentos %}
-            <div id="intento-{{ intento.numero }}" class="intento {% if not loop.first %}oculto{% endif %}">
-                <h2>Intento {{ intento.numero }}</h2>
+        <h1>Retroalimentación del Quiz</h1>
+        <p><strong>Usuario:</strong> {{ user }} | <strong>Quiz:</strong> {{ quiz }}</p>
 
-                {% for q in intento.preguntas %}
-                    <div class="pregunta">
-                        <h3>Pregunta {{ q.pregunta }}</h3>
-                        <p><strong>Enunciado:</strong> {{ q.enunciado }}</p>
+        {% if intentos %}
+            <div class="botones-intentos">
+                {% for intento in intentos %}
+                    <button class="boton-intento" onclick="mostrarIntento('{{ intento.numero }}')">
+                        📝 Intento {{ intento.numero }}
+                    </button>
+                {% endfor %}
+            </div>
 
-                        <div class="respuesta">
-                            <strong>Respuesta del estudiante:</strong><br>
-                            {{ q.respuesta_estudiante }}
+            {% for intento in intentos %}
+                <div id="intento-{{ intento.numero }}" class="intento {% if not loop.first %}oculto{% endif %}">
+                    <h2>Intento {{ intento.numero }}</h2>
+
+                    {% for q in intento.preguntas %}
+                        <div class="pregunta">
+                            <h3>Pregunta {{ q.pregunta }}</h3>
+                            <p><strong>Enunciado:</strong> {{ q.enunciado }}</p>
+
+                            <div class="respuesta">
+                                <strong>Respuesta del estudiante:</strong><br>
+                                {{ q.respuesta_estudiante }}
+                            </div>
+
+                            {% if q.es_cerrada %}
+
+                                <!-- 🔹 SOLO PARA CERRADAS -->
+                                <div class="puntaje">
+                                    <strong>Puntaje:</strong> {{ q.puntaje_obtenido }} / {{ q.puntaje_maximo }}
+                                </div>
+
+                            {% else %}
+
+                                <!-- 🔹 SOLO PARA ABIERTAS -->
+                                <div class="retroalimentacion">
+                                    <strong>Retroalimentación:</strong><br>
+                                    {{ q.retroalimentacion | safe }}
+                                </div>
+
+                            {% endif %}
+                            
                         </div>
+                    {% endfor %}
+                </div>
 
-                        {% if q.es_cerrada %}
+                <div class="resumen">
+                    <h3>📊 Resumen del intento</h3>
 
-                            <!-- 🔹 SOLO PARA CERRADAS -->
-                            <div class="puntaje">
-                                <strong>Puntaje:</strong> {{ q.puntaje_obtenido }} / {{ q.puntaje_maximo }}
-                            </div>
+                    {% for nombre, data in intento.dimensiones.items() %}
+                        <p>
+                            <strong>{{ nombre }}:</strong> {{ data.total | round(1) }}
+                        </p>
+                    {% endfor %}
 
-                        {% else %}
+                    <hr>
 
-                            <!-- 🔹 SOLO PARA ABIERTAS -->
-                            <div class="retroalimentacion" style="white-space: pre-line;">
-                                <strong>Retroalimentación:</strong><br>
-                                {{ q.retroalimentacion | safe }}
-                            </div>
-
-                        {% endif %}
-                        
-                    </div>
-                {% endfor %}
-            </div>
-
-            <div class="resumen">
-                <h3>📊 Resumen del intento</h3>
-
-                {% for nombre, data in intento.dimensiones.items() %}
                     <p>
-                        <strong>{{ nombre }}:</strong> {{ data.total | round(0) }}
+                        <strong>🎯 Puntaje total:</strong> {{ intento.total_general }}
                     </p>
-                {% endfor %}
-
-                <hr>
-
-                <p>
-                    <strong>🎯 Puntaje total:</strong> {{ intento.total_general }}
-                </p>
-            </div>
-        {% endfor %}
-    {% else %}
-        <p>No se encontraron intentos o preguntas.</p>
-    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No se encontraron intentos o preguntas.</p>
+        {% endif %}
     
-</div>
+        
+    </div>
 </body>
 </html>
