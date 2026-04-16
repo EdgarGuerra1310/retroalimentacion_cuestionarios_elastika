@@ -609,10 +609,11 @@ def calcular_resumen_intento(preguntas):
         total_general += puntaje
 
     # ✅ FORMATO
-    for dim in dimensiones:
-        dimensiones[dim]["total"] = round(dimensiones[dim]["total"], 2)
+    #for dim in dimensiones:
+    #    dimensiones[dim]["total"] = round(dimensiones[dim]["total"], 2)
 
-    return dimensiones, round(total_general)
+    #return dimensiones, round(total_general)
+    return dimensiones, total_general
 
 # === RUTA PRINCIPAL ===
 @app.route("/cuestionario1/")

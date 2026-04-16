@@ -128,30 +128,31 @@
     </script>
 </head>
 <body>
-    <div class="container">
+<div class="container">
 
-        <!-- LOADER -->
-        <div id="loader">
-            <div class="spinner"></div>
-            <div id="loader-text">🔄 Generando retroalimentación...</div>
+    <!-- LOADER -->
+    <div id="loader">
+        <div class="spinner"></div>
+        <div id="loader-text">🔄 Generando retroalimentación...</div>
+    </div>
+
+    <h1>Retroalimentación del Quiz</h1>
+    <p><strong>Usuario:</strong> {{ user }} | <strong>Quiz:</strong> {{ quiz }}</p>
+
+    {% if intentos %}
+        <div class="botones-intentos">
+            {% for intento in intentos %}
+                <button class="boton-intento" onclick="mostrarIntento('{{ intento.numero }}')">
+                    📝 Intento {{ intento.numero }}
+                </button>
+            {% endfor %}
         </div>
 
-        <h1>Retroalimentación del Quiz</h1>
-        <p><strong>Usuario:</strong> {{ user }} | <strong>Quiz:</strong> {{ quiz }}</p>
+        {% for intento in intentos %}
+            <div id="intento-{{ intento.numero }}" class="intento {% if not loop.first %}oculto{% endif %}">
+                <h2>Intento {{ intento.numero }}</h2>
 
-        {% if intentos %}
-            <div class="botones-intentos">
-                {% for intento in intentos %}
-                    <button class="boton-intento" onclick="mostrarIntento('{{ intento.numero }}')">
-                        📝 Intento {{ intento.numero }}
-                    </button>
-                {% endfor %}
-            </div>
-
-            {% for intento in intentos %}
-                <div id="intento-{{ intento.numero }}" class="intento {% if not loop.first %}oculto{% endif %}">
-                    <h2>Intento {{ intento.numero }}</h2>
-
+                {% if intento.numero < 3 %}
                     {% for q in intento.preguntas %}
                         <div class="pregunta">
                             <h3>Pregunta {{ q.pregunta }}</h3>
@@ -163,47 +164,55 @@
                             </div>
 
                             {% if q.es_cerrada %}
-
-                                <!-- 🔹 SOLO PARA CERRADAS -->
                                 <div class="puntaje">
                                     <strong>Puntaje:</strong> {{ q.puntaje_obtenido }} / {{ q.puntaje_maximo }}
                                 </div>
-
                             {% else %}
-
-                                <!-- 🔹 SOLO PARA ABIERTAS -->
                                 <div class="retroalimentacion">
                                     <strong>Retroalimentación:</strong><br>
                                     {{ q.retroalimentacion | safe }}
                                 </div>
-
                             {% endif %}
-                            
                         </div>
                     {% endfor %}
-                </div>
+                {% else %}
+                    <p style="color:#004aad; font-weight:500;">                        
+                    </p>
+                {% endif %}
 
+                <!-- ✅ AHORA EL RESUMEN VA AQUÍ -->
                 <div class="resumen">
                     <h3>📊 Resumen del intento</h3>
 
                     {% for nombre, data in intento.dimensiones.items() %}
                         <p>
-                            <strong>{{ nombre }}:</strong> {{ data.total | round(1) }}
+                            <strong>{{ nombre }}:</strong> {{ "%.3f"|format(data.total) }}
                         </p>
                     {% endfor %}
 
                     <hr>
 
                     <p>
-                        <strong>🎯 Puntaje total:</strong> {{ intento.total_general }}
+                        <strong>🎯 Puntaje total:</strong> {{ "%.3f"|format(intento.total_general) }}<br>
+                        <strong>🎯 Puntaje final:</strong> {{ intento.total_general | round }}
                     </p>
                 </div>
-            {% endfor %}
-        {% else %}
-            <p>No se encontraron intentos o preguntas.</p>
-        {% endif %}
-    
-        
+
+            </div>
+        {% endfor %}
+
+    {% else %}
+        <p>No se encontraron intentos o preguntas.</p>
+    {% endif %}
+
+    <div class="footer-info">
+    📌 <strong>Nota importante:</strong> La calificación final será el puntaje más alto obtenido entre todos tus intentos.
     </div>
+
+    <div class="footer-info">
+        🤖 Me encuentro en proceso de entrenamiento. Tu interacción contribuye a mejorar mi funcionamiento.
+    </div>
+
+</div>
 </body>
 </html>
