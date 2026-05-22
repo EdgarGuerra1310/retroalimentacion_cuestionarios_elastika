@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Generando retroalimentación</title>
+
+    <style>
+
+        body{
+            margin:0;
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            background:#f4f7fc;
+            font-family:Arial;
+        }
+
+        .loader-container{
+            text-align:center;
+        }
+
+        .spinner{
+            width:70px;
+            height:70px;
+            border:7px solid #d9e6ff;
+            border-top:7px solid #004aad;
+            border-radius:50%;
+            animation:girar 1s linear infinite;
+            margin:auto;
+            margin-bottom:20px;
+        }
+
+        @keyframes girar{
+            100%{
+                transform:rotate(360deg);
+            }
+        }
+
+        h2{
+            color:#004aad;
+        }
+
+        p{
+            color:#555;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="loader-container">
+
+    <div class="spinner"></div>
+
+    <h2>Generando retroalimentación</h2>
+
+    <p>
+        Estamos analizando tus respuestas.<br>
+        Esto puede tardar unos minutos...
+    </p>
+
+</div>
+
+<script>
+
+function verificarEstado() {
+
+    fetch("/task/{{ task_id }}")
+        .then(r => r.json())
+        .then(data => {
+
+            if (data.ready) {
+
+                window.location.href =
+                    "/resultado/{{ task_id }}";
+
+            } else {
+
+                setTimeout(
+                    verificarEstado,
+                    3000
+                );
+
+            }
+
+        });
+
+}
+
+verificarEstado();
+
+</script>
+
+</body>
+</html>

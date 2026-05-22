@@ -11,8 +11,8 @@ domain = "https://campusvirtual-sifods.minedu.gob.pe"
 restformat = "json"
 
 userid = 4   # <<-- pon aquí el id del usuario
-courseid = 2501  # <<-- pon aquí el id del curso
-quizid = 11877    # <<-- pon aquí el id del quiz
+courseid = 2502  # <<-- pon aquí el id del curso
+quizid = 12036    # <<-- pon aquí el id del quiz
 
 # === PRIMER PASO: obtener intentos del usuario ===
 function = "mod_quiz_get_user_attempts"
@@ -121,7 +121,7 @@ for col in ws.columns:
     ws.column_dimensions[get_column_letter(column)].width = adjusted_width
 
 # Guardamos el archivo
-output_path = r"resultados_quiz_todos_intentos3.xlsx"
+output_path = r"resultados_quiz.xlsx"
 wb.save(output_path)
 
 print(f"✅ Archivo Excel generado: {output_path}")

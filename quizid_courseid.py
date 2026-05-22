@@ -4,7 +4,7 @@ token = "934a5bc65d092299e862902196a6f43b"
 domain = "https://campusvirtual-sifods.minedu.gob.pe"
 restformat = "json"
 
-quizid = 11877  # TU QUIZID REAL
+quizid = 12036  # TU QUIZID REAL
 
 params = {
     "wstoken": token,
