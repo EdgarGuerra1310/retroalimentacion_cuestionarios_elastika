@@ -4,6 +4,7 @@ celery_app = Celery(
     "retroalimentacion",
     broker="redis://localhost:6379/2",
     backend="redis://localhost:6379/2"
+    include=["tasks"]   # 👈 CLAVE
 )
 
 celery_app.conf.update(
@@ -13,3 +14,4 @@ celery_app.conf.update(
     timezone="America/Lima",
     enable_utc=True
 )
+
