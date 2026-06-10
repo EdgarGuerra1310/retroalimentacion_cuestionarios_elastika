@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Retroalimentación del Quiz</title>
+    <title>Retroalimentación del Cuestionario de Salida</title>
     <style>
         body {
             font-family: 'Segoe UI', sans-serif;
@@ -99,12 +99,22 @@
             border-radius: 5px;
             line-height: 1.6;
 
-            white-space: pre-wrap;
-            overflow-wrap: break-word;
-            word-break: break-word;
+            width: 100%;
+            box-sizing: border-box;
 
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-wrap: break-word;
+            word-break: break-word;
+        }
+
+        /* Forzar a TODOS los elementos internos */
+        .retroalimentacion * {
             max-width: 100%;
-            overflow-x: auto;
+            overflow-wrap: anywhere;
+            word-wrap: break-word;
+            word-break: break-word;
+            white-space: normal;
         }
 
         .retroalimentacion p {

@@ -93,6 +93,7 @@ def resultado(task_id):
 
     resultado = tarea.result
 
+
     return render_template(
         "index.html",
         intentos=resultado["intentos"],

@@ -3,7 +3,7 @@ from celery import Celery
 celery_app = Celery(
     "retroalimentacion",
     broker="redis://localhost:6379/2",
-    backend="redis://localhost:6379/2"
+    backend="redis://localhost:6379/2",
     include=["tasks"]   # 👈 CLAVE
 )
 

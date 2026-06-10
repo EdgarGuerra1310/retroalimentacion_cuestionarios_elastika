@@ -26,7 +26,7 @@ QUIZ_CONFIG = {
         "preguntas_cerradas": ["1","2","3","4","5","6"]
     },
 
-    "12035": {
+    "12036": {
         "preguntas_cerradas": ["1","2","3","4"]
     }
 }
