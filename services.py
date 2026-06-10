@@ -415,6 +415,19 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
         "Rúbrica:"
     ]
 
+    prompt.append("""
+        IMPORTANTE:
+        Devuelve EXACTAMENTE este formato:
+
+        Criterio: [nombre del criterio]
+        Nivel alcanzado: Insuficiente|En proceso|Satisfactorio|Destacado
+        Justificación: ...
+
+        No uses encabezados Markdown (####).
+        No uses viñetas.
+        No uses negritas.
+        """)
+
     #print(respuesta_estudiante)
     for c in criterios:
         prompt.append(
@@ -426,6 +439,9 @@ def generar_retroalimentacion_con_rubrica_ia(quizid, numero, respuesta_estudiant
         )
 
     prompt_text = "\n".join(prompt)
+
+
+    
 
     try:
         completion = client.chat.completions.create(
